@@ -1,4 +1,5 @@
-//  --- Data: Formula Definitions ---
+
+// --- Data: Formula Definitions ---
 const FORMULAS = {
     "Logical": {
         "IF": {
@@ -8,7 +9,11 @@ const FORMULAS = {
                 { name: "logical_test", desc: "Any value or expression that can be evaluated to TRUE or FALSE." },
                 { name: "value_if_true", desc: "The value that you want to be returned if the logical_test argument evaluates to TRUE." },
                 { name: "value_if_false", desc: "The value that you want to be returned if the logical_test argument evaluates to FALSE." }
-            ]
+            ],
+            eval: (args) => {
+                const cond = evaluateExpression(args[0]);
+                return cond ? args[1] : (args[2] !== undefined ? args[2] : false);
+            }
         },
         "AND": {
             desc: "Returns TRUE if all of its arguments are TRUE.",
@@ -17,7 +22,8 @@ const FORMULAS = {
                 { name: "logical1", desc: "The first condition that you want to test." },
                 { name: "logical2", desc: "Additional conditions to test (optional)." }
             ],
-            isVariadic: true
+            isVariadic: true,
+            eval: (args) => args.every(a => evaluateExpression(a))
         },
         "OR": {
             desc: "Returns TRUE if any argument is TRUE.",
@@ -26,14 +32,16 @@ const FORMULAS = {
                 { name: "logical1", desc: "The first condition that you want to test." },
                 { name: "logical2", desc: "Additional conditions to test (optional)." }
             ],
-            isVariadic: true
+            isVariadic: true,
+            eval: (args) => args.some(a => evaluateExpression(a))
         },
         "NOT": {
             desc: "Reverses the logic of its argument.",
             syntax: "NOT(logical)",
             args: [
                 { name: "logical", desc: "A value or expression that can be evaluated to TRUE or FALSE." }
-            ]
+            ],
+            eval: (args) => !evaluateExpression(args[0])
         },
         "IFS": {
             desc: "Checks whether one or more conditions are met and returns a value that corresponds to the first TRUE condition.",
@@ -43,15 +51,13 @@ const FORMULAS = {
                 { name: "value_if_true1", desc: "Result if first condition is true." }
             ],
             isVariadic: true,
-            variadicPair: true
-        },
-        "IFERROR": {
-            desc: "Returns a value you specify if a formula evaluates to an error; otherwise, returns the result of the formula.",
-            syntax: "IFERROR(value, value_if_error)",
-            args: [
-                { name: "value", desc: "The argument that is checked for an error." },
-                { name: "value_if_error", desc: "The value to return if the formula evaluates to an error." }
-            ]
+            variadicPair: true,
+            eval: (args) => {
+                for(let i=0; i<args.length; i+=2) {
+                    if(evaluateExpression(args[i])) return args[i+1];
+                }
+                return "#N/A";
+            }
         }
     },
     "Text": {
@@ -62,7 +68,13 @@ const FORMULAS = {
                 { name: "text", desc: "The text string containing the characters you want to extract." },
                 { name: "start_num", desc: "The position of the first character you want to extract in text." },
                 { name: "num_chars", desc: "The number of characters you want MID to return from text." }
-            ]
+            ],
+            eval: (args) => {
+                const txt = String(args[0] || "");
+                const start = Math.max(0, Number(args[1]) - 1);
+                const len = Number(args[2]);
+                return txt.substr(start, len);
+            }
         },
         "LEFT": {
             desc: "Returns the first character or characters in a text string.",
@@ -70,7 +82,12 @@ const FORMULAS = {
             args: [
                 { name: "text", desc: "The text string containing the characters you want to extract." },
                 { name: "num_chars", desc: "Specifies the number of characters you want LEFT to extract." }
-            ]
+            ],
+            eval: (args) => {
+                const txt = String(args[0] || "");
+                const len = args[1] === undefined ? 1 : Number(args[1]);
+                return txt.substring(0, len);
+            }
         },
         "RIGHT": {
             desc: "Returns the last character or characters in a text string.",
@@ -78,7 +95,12 @@ const FORMULAS = {
             args: [
                 { name: "text", desc: "The text string containing the characters you want to extract." },
                 { name: "num_chars", desc: "Specifies the number of characters you want RIGHT to extract." }
-            ]
+            ],
+            eval: (args) => {
+                const txt = String(args[0] || "");
+                const len = args[1] === undefined ? 1 : Number(args[1]);
+                return txt.slice(-len);
+            }
         },
         "CONCATENATE": {
             desc: "Joins several text strings into one text string.",
@@ -87,40 +109,40 @@ const FORMULAS = {
                 { name: "text1", desc: "The first text item to join." },
                 { name: "text2", desc: "Additional text items to join." }
             ],
-            isVariadic: true
-        },
-        "TEXTJOIN": {
-            desc: "Combines the text from multiple ranges and/or strings, and includes a delimiter you specify between each text value.",
-            syntax: "TEXTJOIN(delimiter, ignore_empty, text1, ...)",
-            args: [
-                { name: "delimiter", desc: "A text string, either empty, or one or more characters enclosed by double quotes, or a reference to a valid text string." },
-                { name: "ignore_empty", desc: "If TRUE, ignores empty cells." },
-                { name: "text1", desc: "Text item to be joined." }
-            ],
-            isVariadic: true
+            isVariadic: true,
+            eval: (args) => args.join("")
         },
         "LEN": {
             desc: "Returns the number of characters in a text string.",
             syntax: "LEN(text)",
             args: [
                 { name: "text", desc: "The text whose length you want to find." }
-            ]
+            ],
+            eval: (args) => String(args[0]||"").length
         },
         "TRIM": {
             desc: "Removes all spaces from text except for single spaces between words.",
             syntax: "TRIM(text)",
             args: [
                 { name: "text", desc: "The text from which you want to remove spaces." }
-            ]
+            ],
+            eval: (args) => String(args[0]||"").trim()
         },
         "FIND": {
-            desc: "Locates one text string within a second text string, and returns the number of the starting position of the first text string from the first character of the second text string.",
+            desc: "Locates one text string within a second text string.",
             syntax: "FIND(find_text, within_text, [start_num])",
             args: [
                 { name: "find_text", desc: "The text you want to find." },
                 { name: "within_text", desc: "The text containing the text you want to find." },
                 { name: "start_num", desc: "Specifies the character at which to start the search." }
-            ]
+            ],
+            eval: (args) => {
+                const search = String(args[0]);
+                const text = String(args[1]);
+                const start = args[2] ? Number(args[2]) - 1 : 0;
+                const pos = text.indexOf(search, start);
+                return pos === -1 ? "#VALUE!" : pos + 1;
+            }
         }
     },
     "Math": {
@@ -131,7 +153,8 @@ const FORMULAS = {
                 { name: "number1", desc: "The first number argument you want to add." },
                 { name: "number2", desc: "Number arguments 2 to 255 that you want to add." }
             ],
-            isVariadic: true
+            isVariadic: true,
+            eval: (args) => args.reduce((a,b) => Number(a) + Number(b), 0)
         },
         "AVERAGE": {
             desc: "Returns the average (arithmetic mean) of the arguments.",
@@ -140,7 +163,12 @@ const FORMULAS = {
                 { name: "number1", desc: "The first number, cell reference, or range for which you want the average." },
                 { name: "number2", desc: "Additional numbers, cell references or ranges." }
             ],
-            isVariadic: true
+            isVariadic: true,
+            eval: (args) => {
+                if(args.length === 0) return 0;
+                const sum = args.reduce((a,b) => Number(a) + Number(b), 0);
+                return sum / args.length;
+            }
         },
         "MAX": {
             desc: "Returns the largest value in a set of values.",
@@ -149,7 +177,8 @@ const FORMULAS = {
                 { name: "number1", desc: "A number, cell reference, or range." },
                 { name: "number2", desc: "Additional numbers, cell references or ranges." }
             ],
-            isVariadic: true
+            isVariadic: true,
+            eval: (args) => Math.max(...args.map(Number))
         },
         "MIN": {
             desc: "Returns the smallest number in a set of values.",
@@ -158,15 +187,8 @@ const FORMULAS = {
                 { name: "number1", desc: "A number, cell reference, or range." },
                 { name: "number2", desc: "Additional numbers, cell references or ranges." }
             ],
-            isVariadic: true
-        },
-        "ROUND": {
-            desc: "Rounds a number to a specified number of digits.",
-            syntax: "ROUND(number, num_digits)",
-            args: [
-                { name: "number", desc: "The number that you want to round." },
-                { name: "num_digits", desc: "The number of digits to which you want to round the number argument." }
-            ]
+            isVariadic: true,
+            eval: (args) => Math.min(...args.map(Number))
         }
     },
     "Lookup": {
@@ -178,65 +200,22 @@ const FORMULAS = {
                 { name: "table_array", desc: "The range of cells that contains the data." },
                 { name: "col_index_num", desc: "The column number in the table_array from which the matching value must be returned." },
                 { name: "range_lookup", desc: "A logical value that specifies whether you want VLOOKUP to find an exact match or an approximate match." }
-            ]
-        },
-        "XLOOKUP": {
-            desc: "Searches a range or an array, and returns an item corresponding to the first match it finds.",
-            syntax: "XLOOKUP(lookup_value, lookup_array, return_array, [if_not_found], [match_mode], [search_mode])",
-            args: [
-                { name: "lookup_value", desc: "The value to search for." },
-                { name: "lookup_array", desc: "The array or range to search." },
-                { name: "return_array", desc: "The array or range to return." },
-                { name: "if_not_found", desc: "Where a valid match is not found, return the [if_not_found] text." }
-            ]
-        },
-        "INDEX": {
-            desc: "Returns a value or the reference to a value from within a table or range.",
-            syntax: "INDEX(array, row_num, [column_num])",
-            args: [
-                { name: "array", desc: "A range of cells or an array constant." },
-                { name: "row_num", desc: "Selects the row in array from which to return a value." },
-                { name: "column_num", desc: "Selects the column in array from which to return a value." }
-            ]
-        },
-        "MATCH": {
-            desc: "Searches for a specified item in a range of cells, and then returns the relative position of that item in the range.",
-            syntax: "MATCH(lookup_value, lookup_array, [match_type])",
-            args: [
-                { name: "lookup_value", desc: "The value that you want to match in lookup_array." },
-                { name: "lookup_array", desc: "The range of cells being searched." },
-                { name: "match_type", desc: "The number -1, 0, or 1. Specifies how MATCH matches lookup_value." }
-            ]
+            ],
+            eval: () => "Ref" // Too complex for simple live preview
         }
     },
     "Date & Time": {
         "TODAY": {
             desc: "Returns the serial number of the current date.",
             syntax: "TODAY()",
-            args: []
+            args: [],
+            eval: () => new Date().toLocaleDateString()
         },
         "NOW": {
             desc: "Returns the serial number of the current date and time.",
             syntax: "NOW()",
-            args: []
-        },
-        "DATE": {
-            desc: "Returns the serial number that represents a particular date.",
-            syntax: "DATE(year, month, day)",
-            args: [
-                { name: "year", desc: "The value of the year argument can include one to four digits." },
-                { name: "month", desc: "A positive or negative integer representing the month of the year." },
-                { name: "day", desc: "A positive or negative integer representing the day of the month." }
-            ]
-        },
-        "DATEDIF": {
-            desc: "Calculates the number of days, months, or years between two dates.",
-            syntax: "DATEDIF(start_date, end_date, unit)",
-            args: [
-                { name: "start_date", desc: "A date that represents the first, or starting, date of the period." },
-                { name: "end_date", desc: "A date that represents the last, or ending, date of the period." },
-                { name: "unit", desc: "The type of information that you want returned ('Y', 'M', 'D', 'MD', 'YM', 'YD')." }
-            ]
+            args: [],
+            eval: () => new Date().toLocaleString()
         }
     }
 };
@@ -245,6 +224,12 @@ const FORMULAS = {
 let formulaTree = null;
 let nodeCounter = 0;
 let activeNodeIdForReplace = null;
+
+// Mock Data State for Live Preview
+const MOCK_DATA = {
+    "A1": "10", "B1": "20",
+    "A2": "Test", "B2": "Excel"
+};
 
 // --- DOM Elements ---
 const libraryContainer = document.getElementById('library-container');
@@ -259,6 +244,10 @@ const helperPanel = document.getElementById('helper-panel');
 const helpTitle = document.getElementById('help-title');
 const helpDesc = document.getElementById('help-desc');
 const helpSyntax = document.getElementById('help-syntax');
+
+// Live Preview Elements
+const livePreviewResult = document.getElementById('live-preview-result');
+const livePreviewContainer = document.getElementById('live-preview-container');
 
 // Modal Elements
 const modalOverlay = document.getElementById('modal-overlay');
@@ -275,25 +264,26 @@ const closeRoadmapBtn = document.getElementById('close-roadmap');
 function init() {
     renderLibrary();
     setupEventListeners();
+    renderLivePreviewInputs();
 }
 
 // --- Rendering Library ---
 function renderLibrary(filter = "") {
     libraryContainer.innerHTML = "";
-
+    
     const flatFilter = filter.toLowerCase().trim();
 
     for (const [category, funcs] of Object.entries(FORMULAS)) {
         const categoryDiv = document.createElement('div');
         categoryDiv.className = "mb-4";
-
+        
         const catTitle = document.createElement('h3');
         catTitle.className = "px-3 py-1 text-xs font-bold text-slate-500 uppercase tracking-wider mb-1";
         catTitle.textContent = category;
-
+        
         const funcList = document.createElement('div');
         funcList.className = "space-y-1";
-
+        
         let hasVisibleFuncs = false;
 
         for (const [funcName, details] of Object.entries(funcs)) {
@@ -310,10 +300,10 @@ function renderLibrary(filter = "") {
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
             `;
-
+            
             btn.onclick = () => handleLibraryClick(funcName);
             btn.onmouseenter = () => showHelp(funcName, details);
-
+            
             funcList.appendChild(btn);
         }
 
@@ -333,7 +323,7 @@ function handleLibraryClick(funcName) {
     if (!formulaTree) {
         startNewTree(funcName);
     } else {
-        if (confirm("Replace current formula with new " + funcName + "?")) {
+        if(confirm("Replace current formula with new " + funcName + "?")) {
             startNewTree(funcName);
         }
     }
@@ -342,7 +332,7 @@ function handleLibraryClick(funcName) {
 function startNewTree(funcName) {
     const funcDef = getFuncDef(funcName);
     formulaTree = createFunctionNode(funcName, funcDef);
-
+    
     emptyState.classList.add('hidden');
     builderRoot.classList.remove('hidden');
     renderBuilder();
@@ -385,16 +375,16 @@ function renderBuilder() {
 function renderNode(node, depth) {
     const container = document.createElement('div');
     container.className = "node-container mb-4";
-
+    
     if (node.type === "function") {
         // Header for Function
         const header = document.createElement('div');
         header.className = "flex items-center gap-2 mb-2 p-2 bg-slate-800 border border-slate-700 rounded-lg shadow-md";
-
+        
         const label = document.createElement('span');
         label.className = "font-bold text-green-400 px-2 py-1 bg-slate-900 border border-slate-700 rounded text-sm";
         label.textContent = node.name;
-
+        
         const removeBtn = document.createElement('button');
         removeBtn.className = "ml-auto text-slate-500 hover:text-red-400 p-1 rounded transition-colors";
         removeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>`;
@@ -412,12 +402,12 @@ function renderNode(node, depth) {
         // Arguments Container
         const argsContainer = document.createElement('div');
         argsContainer.className = "pl-6 relative border-l-2 border-slate-700 ml-4 space-y-4";
-
+        
         node.args.forEach((argNode, index) => {
-            const argDef = node.def.args[index] || { name: `arg${index + 1}`, desc: "Additional argument" };
-
+            const argDef = node.def.args[index] || { name: `arg${index+1}`, desc: "Additional argument" };
+            
             const argWrapper = document.createElement('div');
-
+            
             // Label for Argument
             const argLabel = document.createElement('div');
             argLabel.className = "text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1 flex items-center gap-2";
@@ -430,7 +420,7 @@ function renderNode(node, depth) {
 
             argWrapper.appendChild(argLabel);
             argWrapper.appendChild(renderNode(argNode, depth + 1));
-
+            
             argsContainer.appendChild(argWrapper);
         });
 
@@ -453,7 +443,7 @@ function renderNode(node, depth) {
         // Value Node
         const valueWrapper = document.createElement('div');
         valueWrapper.className = "flex items-center gap-2";
-
+        
         const input = document.createElement('input');
         input.type = "text";
         input.value = node.value;
@@ -473,7 +463,7 @@ function renderNode(node, depth) {
         valueWrapper.appendChild(funcBtn);
         container.appendChild(valueWrapper);
     }
-
+    
     return container;
 }
 
@@ -482,14 +472,15 @@ function replaceNodeInTree(currentNode, targetId, newNode) {
     if (currentNode.id === targetId) {
         return newNode;
     }
-
+    
     if (currentNode.type === "function") {
         for (let i = 0; i < currentNode.args.length; i++) {
             if (currentNode.args[i].id === targetId) {
                 currentNode.args[i] = newNode;
                 return currentNode;
             }
-            replaceNodeInTree(currentNode.args[i], targetId, newNode);
+            // Important: Assign result of recursion
+            currentNode.args[i] = replaceNodeInTree(currentNode.args[i], targetId, newNode);
         }
     }
     return currentNode;
@@ -516,7 +507,7 @@ function renderModalList(filter = "") {
     for (const [category, funcs] of Object.entries(FORMULAS)) {
         let categoryHasMatch = false;
         const fragment = document.createDocumentFragment();
-
+        
         const catHeader = document.createElement('div');
         catHeader.className = "px-2 py-1 mt-2 text-xs font-bold text-slate-500 uppercase";
         catHeader.textContent = category;
@@ -524,20 +515,20 @@ function renderModalList(filter = "") {
 
         for (const [funcName, details] of Object.entries(funcs)) {
             if (flatFilter && !funcName.toLowerCase().includes(flatFilter)) continue;
-
+            
             categoryHasMatch = true;
             const btn = document.createElement('button');
             btn.className = "w-full text-left px-4 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-800 hover:border-slate-600 rounded text-sm flex flex-col group transition-all";
             btn.onclick = () => selectFunctionFromModal(funcName);
-
+            
             const nameSpan = document.createElement('span');
             nameSpan.className = "font-bold text-slate-200 group-hover:text-green-400";
             nameSpan.textContent = funcName;
-
+            
             const descSpan = document.createElement('span');
             descSpan.className = "text-slate-400 text-xs truncate w-full group-hover:text-slate-300 mt-0.5";
             descSpan.textContent = details.desc;
-
+            
             btn.appendChild(nameSpan);
             btn.appendChild(descSpan);
             fragment.appendChild(btn);
@@ -552,7 +543,7 @@ function renderModalList(filter = "") {
 function selectFunctionFromModal(funcName) {
     const funcDef = getFuncDef(funcName);
     const newNode = createFunctionNode(funcName, funcDef);
-
+    
     if (activeNodeIdForReplace === "NEW_ROOT") {
         startNewTree(funcName);
     } else if (formulaTree.id === activeNodeIdForReplace) {
@@ -560,7 +551,7 @@ function selectFunctionFromModal(funcName) {
     } else {
         replaceNodeInTree(formulaTree, activeNodeIdForReplace, newNode);
     }
-
+    
     renderBuilder();
     updateResult();
     closeModal();
@@ -569,11 +560,11 @@ function selectFunctionFromModal(funcName) {
 // --- Output Generation ---
 function generateFormula(node) {
     if (!node) return "";
-
+    
     if (node.type === "value") {
-        return node.value;
+        return node.value; 
     }
-
+    
     if (node.type === "function") {
         const args = node.args.map(arg => generateFormula(arg));
         return `${node.name}(${args.join(", ")})`;
@@ -585,9 +576,91 @@ function updateResult() {
     if (formulaTree) {
         const formula = "=" + generateFormula(formulaTree);
         formulaResult.value = formula;
+        updateLivePreview();
     } else {
         formulaResult.value = "";
+        if(livePreviewResult) livePreviewResult.textContent = "...";
     }
+}
+
+// --- Live Preview & Logic ---
+
+function renderLivePreviewInputs() {
+    if(!livePreviewContainer) return;
+    livePreviewContainer.innerHTML = "";
+    
+    Object.keys(MOCK_DATA).forEach(cell => {
+        const wrapper = document.createElement('div');
+        wrapper.className = "flex flex-col gap-1";
+        
+        const label = document.createElement('label');
+        label.className = "text-xs font-bold text-slate-500";
+        label.textContent = cell;
+        
+        const input = document.createElement('input');
+        input.type = "text";
+        input.value = MOCK_DATA[cell];
+        input.className = "w-full px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-sm text-slate-200 focus:border-green-500 focus:outline-none";
+        input.oninput = (e) => {
+            MOCK_DATA[cell] = e.target.value;
+            updateLivePreview();
+        };
+        
+        wrapper.appendChild(label);
+        wrapper.appendChild(input);
+        livePreviewContainer.appendChild(wrapper);
+    });
+}
+
+function updateLivePreview() {
+    if (!formulaTree || !livePreviewResult) return;
+    
+    try {
+        const result = evaluateTree(formulaTree);
+        livePreviewResult.textContent = result;
+    } catch (e) {
+        console.error(e);
+        livePreviewResult.textContent = "Error";
+    }
+}
+
+function evaluateTree(node) {
+    if (node.type === "value") {
+        return evaluateExpression(node.value);
+    }
+    if (node.type === "function") {
+        const argValues = node.args.map(arg => evaluateTree(arg));
+        if (node.def.eval) {
+            return node.def.eval(argValues);
+        }
+        return "#N/A (Not Implemented)";
+    }
+    return "";
+}
+
+function evaluateExpression(val) {
+    if (typeof val !== 'string') return val;
+    
+    // Check if it's a cell reference in MOCK_DATA
+    const trimmed = val.trim();
+    if (MOCK_DATA.hasOwnProperty(trimmed)) {
+        const cellVal = MOCK_DATA[trimmed];
+        // Try to return number if possible
+        const num = Number(cellVal);
+        return isNaN(num) || cellVal === "" ? cellVal : num;
+    }
+    
+    // Try to parse number literal
+    if (!isNaN(Number(val)) && val.trim() !== "") {
+        return Number(val);
+    }
+    
+    // Remove quotes if it's a string literal "text"
+    if (val.startsWith('"') && val.endsWith('"')) {
+        return val.slice(1, -1);
+    }
+    
+    return val;
 }
 
 // --- Help & UI Interactions ---
@@ -598,55 +671,57 @@ function showHelp(funcName, details) {
 }
 
 function setupEventListeners() {
-    functionSearch.addEventListener('input', (e) => renderLibrary(e.target.value));
-    modalSearch.addEventListener('input', (e) => renderModalList(e.target.value));
-    closeModalBtn.addEventListener('click', closeModal);
-
-    startBtn.addEventListener('click', () => {
+    if(functionSearch) functionSearch.addEventListener('input', (e) => renderLibrary(e.target.value));
+    if(modalSearch) modalSearch.addEventListener('input', (e) => renderModalList(e.target.value));
+    if(closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
+    
+    if(startBtn) startBtn.addEventListener('click', () => {
         activeNodeIdForReplace = "NEW_ROOT";
         renderModalList();
         modalOverlay.classList.remove('hidden');
         modalSearch.focus();
     });
 
-    resetBtn.addEventListener('click', () => {
-        if (confirm("Are you sure you want to reset everything?")) {
+    if(resetBtn) resetBtn.addEventListener('click', () => {
+        if(confirm("Are you sure you want to reset everything?")) {
             formulaTree = null;
             builderRoot.innerHTML = "";
             builderRoot.classList.add('hidden');
             emptyState.classList.remove('hidden');
             formulaResult.value = "";
+            if(livePreviewResult) livePreviewResult.textContent = "...";
         }
     });
 
-    copyBtn.addEventListener('click', () => {
+    if(copyBtn) copyBtn.addEventListener('click', () => {
         formulaResult.select();
         document.execCommand('copy');
-
+        
         const originalText = copyBtn.innerHTML;
         copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg> Copied!`;
         copyBtn.classList.replace('bg-green-600', 'bg-slate-700');
-
+        
         setTimeout(() => {
             copyBtn.innerHTML = originalText;
             copyBtn.classList.replace('bg-slate-700', 'bg-green-600');
         }, 2000);
     });
 
-    roadmapBtn.addEventListener('click', () => {
+    if(roadmapBtn) roadmapBtn.addEventListener('click', () => {
         roadmapModal.classList.remove('hidden');
     });
 
-    closeRoadmapBtn.addEventListener('click', () => {
+    if(closeRoadmapBtn) closeRoadmapBtn.addEventListener('click', () => {
         roadmapModal.classList.add('hidden');
     });
 
     // Close roadmap on outside click
-    roadmapModal.addEventListener('click', (e) => {
+    if(roadmapModal) roadmapModal.addEventListener('click', (e) => {
         if (e.target === roadmapModal) {
             roadmapModal.classList.add('hidden');
         }
     });
 }
 
-init();
+// Run Init
+document.addEventListener('DOMContentLoaded', init);
