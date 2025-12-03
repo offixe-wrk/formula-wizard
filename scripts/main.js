@@ -260,6 +260,11 @@ const roadmapBtn = document.getElementById('roadmap-btn');
 const roadmapModal = document.getElementById('roadmap-modal');
 const closeRoadmapBtn = document.getElementById('close-roadmap');
 
+// Disclaimer Elements
+const disclaimerBtn = document.getElementById('disclaimer-btn');
+const disclaimerModal = document.getElementById('disclaimer-modal');
+const closeDisclaimerBtn = document.getElementById('close-disclaimer');
+
 // --- Initialization ---
 function init() {
     renderLibrary();
@@ -719,6 +724,21 @@ function setupEventListeners() {
     if(roadmapModal) roadmapModal.addEventListener('click', (e) => {
         if (e.target === roadmapModal) {
             roadmapModal.classList.add('hidden');
+        }
+    });
+
+    // Disclaimer Logic
+    if(disclaimerBtn) disclaimerBtn.addEventListener('click', () => {
+        disclaimerModal.classList.remove('hidden');
+    });
+
+    if(closeDisclaimerBtn) closeDisclaimerBtn.addEventListener('click', () => {
+        disclaimerModal.classList.add('hidden');
+    });
+
+    if(disclaimerModal) disclaimerModal.addEventListener('click', (e) => {
+        if (e.target === disclaimerModal) {
+            disclaimerModal.classList.add('hidden');
         }
     });
 }
