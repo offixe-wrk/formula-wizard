@@ -1,0 +1,45 @@
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Tailwind will be loaded via CDN in index.html */
+
+/* Body font */
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+/* Custom scrollbar for the sidebar */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #1e293b;
+    /* slate-800 */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #475569;
+    /* slate-600 */
+    border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+    /* slate-500 */
+}
+
+/* Tree lines for nested formulas */
+.tree-line {
+    position: absolute;
+    left: -12px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: #334155;
+    /* slate-700 */
+}
+
+.node-container {
+    position: relative;
+}
