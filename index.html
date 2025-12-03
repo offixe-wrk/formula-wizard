@@ -83,17 +83,40 @@
         <!-- Main Area: Builder -->
         <main class="flex-1 flex flex-col bg-slate-950 relative overflow-hidden">
 
-            <!-- Result Preview Bar -->
+            <!-- Result Preview & Live Data Bar -->
             <div class="bg-slate-900 border-b border-slate-800 p-4 shadow-sm shrink-0 z-10">
-                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Current
-                    Formula</label>
-                <div class="relative group">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <span class="text-green-500 font-bold text-lg">=</span>
+                <div class="flex flex-col lg:flex-row gap-4">
+                    <!-- Formula Output -->
+                    <div class="flex-1 min-w-0">
+                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Current Formula</label>
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="text-green-500 font-bold text-lg">=</span>
+                            </div>
+                            <input type="text" id="formula-result" readonly class="w-full pl-8 pr-4 py-3 bg-slate-950 border border-slate-700 rounded-lg font-mono text-slate-300 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500 select-all cursor-text transition-all group-hover:border-slate-600" value="">
+                        </div>
                     </div>
-                    <input type="text" id="formula-result" readonly
-                        class="w-full pl-8 pr-4 py-3 bg-slate-950 border border-slate-700 rounded-lg font-mono text-slate-300 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500 select-all cursor-text transition-all group-hover:border-slate-600"
-                        value="">
+                    <!-- Live Data Preview -->
+                    <div class="w-full lg:w-80 bg-slate-800/50 rounded-lg border border-slate-700/50 p-3">
+                        <div class="flex justify-between items-center mb-2 pb-2 border-b border-slate-700/50">
+                            <h4 class="text-xs font-bold text-slate-400 uppercase flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                Live Preview
+                            </h4>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] text-slate-500">Result:</span>
+                                <span id="live-preview-result" class="text-green-400 font-mono font-bold text-sm">...</span>
+                            </div>
+                        </div>
+                        <div id="live-preview-container" class="grid grid-cols-2 gap-2">
+                            <!-- Inputs injected by JS -->
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
