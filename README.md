@@ -56,6 +56,11 @@ This makes it easy to browse and learn.
 - Smooth transitions and clean layout.
 - Touch-friendly navigation.
 
+#### 9. Mobile Friendly
+- Sidebar becomes collapsible on small screens.
+- Elements resize for touch screens.
+- Full functionality on all devices.
+
 
 ### Installation
 
