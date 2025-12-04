@@ -422,6 +422,11 @@ const disclaimerBtn = document.getElementById('disclaimer-btn');
 const disclaimerModal = document.getElementById('disclaimer-modal');
 const closeDisclaimerBtn = document.getElementById('close-disclaimer');
 
+// Sidebar Elements (Mobile)
+const sidebarToggle = document.getElementById('sidebar-toggle');
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebar-overlay');
+
 // --- Initialization ---
 function init() {
     renderLibrary();
@@ -903,6 +908,41 @@ function setupEventListeners() {
             disclaimerModal.classList.add('hidden');
         }
     });
+
+    // Sidebar Toggle (Mobile)
+    function toggleSidebar() {
+        if(sidebar) {
+            sidebar.classList.toggle('hidden');
+            sidebar.classList.toggle('fixed');
+            sidebar.classList.toggle('md:flex');
+        }
+        if(sidebarOverlay) {
+            sidebarOverlay.classList.toggle('hidden');
+        }
+    }
+
+    function closeSidebar() {
+        if(sidebar && window.innerWidth < 768) {  // Only close on mobile (< md breakpoint)
+            sidebar.classList.add('hidden');
+            sidebar.classList.remove('fixed');
+            sidebar.classList.remove('md:flex');
+        }
+        if(sidebarOverlay) {
+            sidebarOverlay.classList.add('hidden');
+        }
+    }
+
+    if(sidebarToggle) sidebarToggle.addEventListener('click', toggleSidebar);
+    if(sidebarOverlay) sidebarOverlay.addEventListener('click', closeSidebar);
+
+    // Close sidebar when a function is selected (mobile)
+    if(libraryContainer) {
+        libraryContainer.addEventListener('click', (e) => {
+            if(e.target.closest('[data-function]')) {
+                closeSidebar();
+            }
+        });
+    }
 }
 
 // Run Init
