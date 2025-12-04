@@ -217,6 +217,163 @@ const FORMULAS = {
             args: [],
             eval: () => new Date().toLocaleString()
         }
+    },
+    "Statistical": {
+        "AVERAGE": {
+            desc: "Returns the average of its arguments.",
+            syntax: "AVERAGE(number1, [number2], ...)",
+            args: [
+                { name: "number1", desc: "The first number, cell reference, or range for which you want the average." },
+                { name: "number2", desc: "Additional numbers, cell references or ranges." }
+            ],
+            isVariadic: true,
+            eval: (args) => {
+                const nums = args.map(a => Number(a)).filter(n => !isNaN(n));
+                return nums.length > 0 ? (nums.reduce((a, b) => a + b, 0) / nums.length).toFixed(2) : 0;
+            }
+        },
+        "COUNT": {
+            desc: "Counts the number of cells that contain numbers.",
+            syntax: "COUNT(value1, [value2], ...)",
+            args: [
+                { name: "value1", desc: "The first item, cell reference, or range in which you want to count numbers." }
+            ],
+            isVariadic: true,
+            eval: (args) => args.filter(a => !isNaN(Number(a))).length
+        },
+        "MAX": {
+            desc: "Returns the maximum value in a set of values.",
+            syntax: "MAX(number1, [number2], ...)",
+            args: [
+                { name: "number1", desc: "The first number or range for which you want the maximum." }
+            ],
+            isVariadic: true,
+            eval: (args) => Math.max(...args.map(a => Number(a)))
+        },
+        "MIN": {
+            desc: "Returns the minimum value in a set of values.",
+            syntax: "MIN(number1, [number2], ...)",
+            args: [
+                { name: "number1", desc: "The first number or range for which you want the minimum." }
+            ],
+            isVariadic: true,
+            eval: (args) => Math.min(...args.map(a => Number(a)))
+        }
+    },
+    "Financial": {
+        "PMT": {
+            desc: "Calculates the payment for a loan based on constant payments and a constant interest rate.",
+            syntax: "PMT(rate, nper, pv, [fv], [type])",
+            args: [
+                { name: "rate", desc: "The interest rate for the loan." },
+                { name: "nper", desc: "The total number of payment periods." },
+                { name: "pv", desc: "The present value (loan amount)." }
+            ],
+            eval: () => "Financial calculation"
+        },
+        "PV": {
+            desc: "Returns the present value of an investment.",
+            syntax: "PV(rate, nper, pmt, [fv], [type])",
+            args: [
+                { name: "rate", desc: "The interest rate per period." },
+                { name: "nper", desc: "The total number of payment periods." },
+                { name: "pmt", desc: "The payment made each period." }
+            ],
+            eval: () => "Financial calculation"
+        },
+        "FV": {
+            desc: "Returns the future value of an investment.",
+            syntax: "FV(rate, nper, pmt, [pv], [type])",
+            args: [
+                { name: "rate", desc: "The interest rate per period." },
+                { name: "nper", desc: "The total number of payment periods." },
+                { name: "pmt", desc: "The payment made each period." }
+            ],
+            eval: () => "Financial calculation"
+        }
+    },
+    "Engineering": {
+        "CONVERT": {
+            desc: "Converts a number from one measurement system to another.",
+            syntax: "CONVERT(number, from_unit, to_unit)",
+            args: [
+                { name: "number", desc: "The value in from_unit to convert." },
+                { name: "from_unit", desc: "The units for number." },
+                { name: "to_unit", desc: "The units for the result." }
+            ],
+            eval: () => "Unit conversion"
+        },
+        "BASE": {
+            desc: "Converts a number into a text representation with the given radix (base).",
+            syntax: "BASE(number, radix, [min_length])",
+            args: [
+                { name: "number", desc: "The number you want to convert." },
+                { name: "radix", desc: "The base radix that you want to convert the number into (between 2 and 36)." }
+            ],
+            eval: (args) => {
+                try {
+                    return Number(args[0]).toString(Number(args[1]));
+                } catch {
+                    return "#VALUE!";
+                }
+            }
+        }
+    },
+    "Information": {
+        "ISBLANK": {
+            desc: "Returns TRUE if the value is blank.",
+            syntax: "ISBLANK(value)",
+            args: [
+                { name: "value", desc: "The value you want to test." }
+            ],
+            eval: (args) => args[0] === "" || args[0] === undefined
+        },
+        "ISNUMBER": {
+            desc: "Returns TRUE if the value is a number.",
+            syntax: "ISNUMBER(value)",
+            args: [
+                { name: "value", desc: "The value you want to test." }
+            ],
+            eval: (args) => !isNaN(Number(args[0]))
+        },
+        "ISTEXT": {
+            desc: "Returns TRUE if the value is text.",
+            syntax: "ISTEXT(value)",
+            args: [
+                { name: "value", desc: "The value you want to test." }
+            ],
+            eval: (args) => typeof args[0] === 'string'
+        },
+        "ISERROR": {
+            desc: "Returns TRUE if the value is an error value.",
+            syntax: "ISERROR(value)",
+            args: [
+                { name: "value", desc: "The value you want to test." }
+            ],
+            eval: (args) => String(args[0]).startsWith("#")
+        }
+    },
+    "Database": {
+        "DSUM": {
+            desc: "Sums the numbers in a column of a list or database that satisfy criteria you specify.",
+            syntax: "DSUM(database, field, criteria)",
+            args: [
+                { name: "database", desc: "The range of cells that makes up the list or database." },
+                { name: "field", desc: "The column number in the database." },
+                { name: "criteria", desc: "The range of cells that specify the criteria." }
+            ],
+            eval: () => "Database operation"
+        },
+        "DAVERAGE": {
+            desc: "Averages the values in a column of a list or database that meet the criteria you specify.",
+            syntax: "DAVERAGE(database, field, criteria)",
+            args: [
+                { name: "database", desc: "The range of cells that makes up the list or database." },
+                { name: "field", desc: "The column number in the database." },
+                { name: "criteria", desc: "The range of cells that specify the criteria." }
+            ],
+            eval: () => "Database operation"
+        }
     }
 };
 
