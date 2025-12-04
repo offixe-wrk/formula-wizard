@@ -73,7 +73,7 @@ const FORMULAS = {
                 const txt = String(args[0] || "");
                 const start = Math.max(0, Number(args[1]) - 1);
                 const len = Number(args[2]);
-                return txt.substr(start, len);
+                return txt.substring(start, start + len);
             }
         },
         "LEFT": {
@@ -733,6 +733,11 @@ function setupEventListeners() {
     });
 
     if(closeDisclaimerBtn) closeDisclaimerBtn.addEventListener('click', () => {
+        disclaimerModal.classList.add('hidden');
+    });
+
+    const closeDisclaimerFooterBtn = document.getElementById('close-disclaimer-btn');
+    if(closeDisclaimerFooterBtn) closeDisclaimerFooterBtn.addEventListener('click', () => {
         disclaimerModal.classList.add('hidden');
     });
 
