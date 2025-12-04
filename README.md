@@ -13,7 +13,12 @@ Excel Formula Builder is a web-based tool that helps users learn, preview, and b
 - The formula preview updates in real time.
 - Copy the generated formula to your clipboard.
 
-#### 2. Function Categories
+#### 2. Live Data Preview
+- Test your formulas against sample data in real-time.
+- See instant results as you build your formula.
+- Modify test values to experiment with different scenarios.
+
+#### 3. Function Categories
 Functions are grouped into:
 - Math
 - Logical
@@ -28,14 +33,28 @@ Functions are grouped into:
 
 This makes it easy to browse and learn.
 
-#### 3. Responsive UI (Mobile Friendly)
-- Sidebar becomes callapsible on small screens.
-- Smooth transitions and clean layout.
-- Touch-friendly navigation.
-
 #### 4. Searchable Function List
 - Search through all Excel functions instantly
 - Clicking one loads its description and syntax.
+
+#### 5. Disclaimer & Safety Information
+- Important usage notes and legal disclaimer.
+- Ensures users understand tool limitations.
+- Reminds users to verify formulas in their spreadsheets.
+
+#### 6. Planned Features & Ideas
+- View upcoming features and roadmap.
+- Understand what's being worked on.
+- Suggest or vote on new ideas.
+
+#### 7. Reset Functionality
+- Clear all inputs and start fresh with the "Reset All" button.
+- Quickly begin building a new formula.
+
+#### 8. Responsive UI
+- Sidebar adapts to screen size.
+- Smooth transitions and clean layout.
+- Touch-friendly navigation.
 
 
 ### Installation
